@@ -1,0 +1,13 @@
+{
+  "samples": [
+    {
+      "id": "aadd3a70855d4efb894519e81fc5821a",
+      "name": "Shri Voice.mp3",
+      "filename": "aadd3a70855d4efb894519e81fc5821a.mp3",
+      "size": 1602621,
+      "type": "audio/mpeg",
+      "createdAt": "2025-11-27T17:28:38.093025Z",
+      "url": "/api/voices/aadd3a70855d4efb894519e81fc5821a/file"
+    }
+  ]
+}

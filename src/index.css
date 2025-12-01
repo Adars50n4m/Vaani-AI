@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply bg-white text-polo-black dark:bg-black dark:text-white transition-colors duration-300;
+  min-height: 100vh;
+}
+
+@layer components {
+  .polo-card {
+    @apply bg-white dark:bg-black rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/50 dark:shadow-white/5 transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-polo-lime text-black font-medium py-3 px-6 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-polo-lime/20 active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply bg-white dark:bg-black text-black dark:text-white border border-gray-200 dark:border-gray-700 font-medium py-3 px-6 rounded-2xl transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600 active:scale-95;
+  }
+
+  .btn-accent {
+    @apply bg-polo-blue text-white font-medium py-3 px-6 rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-polo-blue/20 active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:border-polo-lime focus:ring-2 focus:ring-polo-lime/20 transition-all duration-300;
+  }
+
+  .slider {
+    @apply bg-gray-200 dark:bg-gray-800 rounded-lg appearance-none cursor-pointer h-2;
+  }
+
+  .slider::-webkit-slider-thumb {
+    @apply appearance-none w-5 h-5 bg-polo-lime rounded-full cursor-pointer shadow-md border-2 border-white hover:scale-110 transition-transform;
+  }
+
+  .slider::-moz-range-thumb {
+    @apply w-5 h-5 bg-polo-lime rounded-full cursor-pointer border-2 border-white shadow-md hover:scale-110 transition-transform;
+  }
+}
+
+/* Animations */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.floating-element {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Custom Scrollbar for menus */
+.menu-scroll::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
