@@ -6,7 +6,7 @@ import torch
 import json
 import uuid
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import tempfile
@@ -178,8 +178,22 @@ else:
 
 ChatterboxVC = MockChatterboxVC
 
-app = Flask(__name__)
+# Initialize Flask with static folder pointing to React build
+app = Flask(__name__, static_folder='../dist', static_url_path='')
 CORS(app)
+
+@app.route('/')
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/<path:path>')
+def serve_static(path):
+    # Check if file exists in static folder
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    # Otherwise return index.html for client-side routing
+    return send_from_directory(app.static_folder, 'index.html')
+
 
 VOICE_LIB_DIR = Path(__file__).resolve().parent / 'voice_library'
 VOICE_METADATA_PATH = VOICE_LIB_DIR / 'metadata.json'
