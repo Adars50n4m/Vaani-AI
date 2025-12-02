@@ -1,0 +1,11 @@
+# Basic Python dependencies for Azure App Service
+# This is a Node.js application, but Azure is configured for Python
+# Adding minimal Python requirements to prevent deployment errors
+
+# Web framework
+Flask==2.3.3
+Werkzeug==2.3.7
+
+# Basic utilities
+requests==2.31.0
+gunicorn==21.2.0
