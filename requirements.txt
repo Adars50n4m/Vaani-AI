@@ -22,3 +22,4 @@ pykakasi==2.3.0
 huggingface_hub
 accelerate
 russian-text-stresser @ git+https://github.com/Vuizur/add-stress-to-epub
+static-ffmpeg
