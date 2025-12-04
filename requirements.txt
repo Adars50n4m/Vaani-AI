@@ -1,11 +1,24 @@
-# Basic Python dependencies for Azure App Service
-# This is a Node.js application, but Azure is configured for Python
-# Adding minimal Python requirements to prevent deployment errors
-
-# Web framework
-Flask==2.3.3
-Werkzeug==2.3.7
-
-# Basic utilities
-requests==2.31.0
-gunicorn==21.2.0
+fastapi>=0.110.0
+uvicorn>=0.20.0
+httpx>=0.25.0
+python-dotenv>=1.0.0
+flask==2.3.3
+flask-cors==4.0.0
+torch>=1.13.0
+numpy>=1.24.0,<1.26.0
+werkzeug==2.3.7
+pymongo[srv]>=4.7.0
+gunicorn
+faster-whisper
+librosa==0.11.0
+s3tokenizer
+transformers==4.46.3
+diffusers==0.29.0
+resemble-perth==1.0.1
+conformer==0.3.2
+safetensors==0.5.3
+spacy-pkuseg
+pykakasi==2.3.0
+huggingface_hub
+accelerate
+russian-text-stresser @ git+https://github.com/Vuizur/add-stress-to-epub
