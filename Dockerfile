@@ -21,6 +21,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libsndfile1 \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy backend requirements
@@ -47,4 +48,4 @@ ENV FLASK_ENV=production
 EXPOSE 8000
 
 # Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "120", "backend.app:app"]
+CMD gunicorn --bind 0.0.0.0:$PORT --timeout 120 backend.app:app

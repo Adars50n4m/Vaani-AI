@@ -195,9 +195,9 @@ def serve_static(path):
     return send_from_directory(app.static_folder, 'index.html')
 
 
-VOICE_LIB_DIR = Path(__file__).resolve().parent / 'voice_library'
+VOICE_LIB_DIR = Path(os.environ.get('VOICE_STORAGE_PATH', Path(__file__).resolve().parent / 'voice_library'))
 VOICE_METADATA_PATH = VOICE_LIB_DIR / 'metadata.json'
-VOICE_LIB_DIR.mkdir(exist_ok=True)
+VOICE_LIB_DIR.mkdir(parents=True, exist_ok=True)
 
 def read_voice_library():
     if not VOICE_METADATA_PATH.exists():
@@ -676,4 +676,4 @@ if __name__ == '__main__':
         print(f"Warning: Could not pre-load models: {e}")
         print("Models will be loaded on first request.")
     
-    app.run(host='0.0.0.0', port=8000, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8000)), debug=True)
