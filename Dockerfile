@@ -48,4 +48,9 @@ ENV FLASK_ENV=production
 EXPOSE 8000
 
 # Command to run the application
-CMD gunicorn --bind 0.0.0.0:$PORT --timeout 120 backend.app:app
+ENV STT_MODEL_NAME=base
+ENV USE_LIGHTWEIGHT_TTS=false
+ENV GUNICORN_CMD_ARGS="--workers 1 --threads 4 --worker-class gthread"
+
+# Command to run the application
+CMD gunicorn --bind 0.0.0.0:$PORT --timeout 600 backend.app:app

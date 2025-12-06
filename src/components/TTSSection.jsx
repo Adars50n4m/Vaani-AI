@@ -48,6 +48,18 @@ const TTSSection = () => {
     { code: 'hi', name: 'Hindi' }
   ]
 
+  const abortControllerRef = React.useRef(null)
+
+  const cancelGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setIsGenerating(false)
+    setProgress(0)
+    alert('Generation cancelled')
+  }
+
   const generateTTS = async () => {
     if (!text.trim()) {
       alert('Please enter some text')
@@ -58,6 +70,14 @@ const TTSSection = () => {
       alert('Text too long (max 10000 characters)')
       return
     }
+
+    // Cancel any previous running request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
 
     setIsGenerating(true)
     setProgress(8)
@@ -83,7 +103,8 @@ const TTSSection = () => {
       console.log('🚀 Sending Vaani TTS request...')
       const response = await fetch('/api/tts/generate', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: controller.signal
       })
 
       if (response.ok) {
@@ -101,10 +122,17 @@ const TTSSection = () => {
         alert('❌ TTS generation failed: ' + error)
       }
     } catch (error) {
-      alert('❌ Error: ' + error.message)
+      if (error.name === 'AbortError') {
+        console.log('Request cancelled')
+      } else {
+        alert('❌ Error: ' + error.message)
+      }
     } finally {
-      setProgress(100)
-      setIsGenerating(false)
+      if (abortControllerRef.current === controller) {
+        setProgress(100)
+        setIsGenerating(false)
+        abortControllerRef.current = null
+      }
     }
   }
 
@@ -380,18 +408,27 @@ const TTSSection = () => {
 
             <div className="mt-auto pt-4">
               <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={!isGenerating ? { scale: 1.02 } : {}}
+                whileTap={!isGenerating ? { scale: 0.98 } : {}}
               >
-                <Button
-                  onClick={generateTTS}
-                  loading={isGenerating}
-                  disabled={!text.trim()}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isGenerating ? 'Generating Speech...' : 'Generate Speech'}
-                </Button>
+                {isGenerating ? (
+                  <Button
+                    onClick={cancelGeneration}
+                    className="w-full bg-red-500 hover:bg-red-600 text-white border-red-600"
+                    size="lg"
+                  >
+                    Cancel Generation
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={generateTTS}
+                    disabled={!text.trim()}
+                    className="w-full"
+                    size="lg"
+                  >
+                    Generate Speech
+                  </Button>
+                )}
               </motion.div>
             </div>
           </CardContent>

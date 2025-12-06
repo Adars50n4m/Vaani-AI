@@ -11,11 +11,51 @@ import usePersistentState from '../hooks/usePersistentState'
 const VCSection = () => {
   const [sourceAudio, setSourceAudio] = useState(null)
   const [targetAudio, setTargetAudio] = useState(null)
+  const [progress, setProgress] = useState(0)
   const [isConverting, setIsConverting] = useState(false)
   const [convertedAudio, setConvertedAudio] = useState(null)
   const { samples, getSampleFile, isHydrated, addSample } = useAudioSamples()
   const [savingVoice, setSavingVoice] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
+  const abortControllerRef = React.useRef(null)
+
+  // Progress simulation effect
+  React.useEffect(() => {
+    let intervalId
+    let resetTimeout
+
+    if (isConverting) {
+      intervalId = setInterval(() => {
+        setProgress((prev) => {
+          if (prev >= 95) return prev
+          const increment = 2 + Math.random() * 3
+          return Math.min(prev + increment, 95)
+        })
+      }, 500)
+    } else if (progress >= 95 || progress === 100) {
+      // Reset after completion or cancellation
+      if (progress === 100) {
+        resetTimeout = setTimeout(() => setProgress(0), 1000)
+      } else {
+        setProgress(0)
+      }
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId)
+      if (resetTimeout) clearTimeout(resetTimeout)
+    }
+  }, [isConverting, progress])
+
+  const cancelConversion = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setIsConverting(false)
+    setProgress(0)
+    alert('Conversion cancelled')
+  }
 
   const convertVoice = async () => {
     if (!sourceAudio) {
@@ -23,7 +63,17 @@ const VCSection = () => {
       return
     }
 
+    // Cancel prev request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+    }
+
+    const controller = new AbortController()
+    abortControllerRef.current = controller
+
     setIsConverting(true)
+    setProgress(5)
+
     try {
       const formData = new FormData()
       formData.append('source_audio', sourceAudio)
@@ -33,7 +83,8 @@ const VCSection = () => {
 
       const response = await fetch('/api/vc/generate', {
         method: 'POST',
-        body: formData
+        body: formData,
+        signal: controller.signal
       })
 
       if (response.ok) {
@@ -46,9 +97,17 @@ const VCSection = () => {
         alert('❌ Voice conversion failed: ' + error)
       }
     } catch (error) {
-      alert('❌ Error: ' + error.message)
+      if (error.name === 'AbortError') {
+        console.log('Request cancelled')
+      } else {
+        alert('❌ Error: ' + error.message)
+      }
     } finally {
-      setIsConverting(false)
+      if (abortControllerRef.current === controller) {
+        setProgress(100)
+        setIsConverting(false)
+        abortControllerRef.current = null
+      }
     }
   }
 
@@ -171,15 +230,24 @@ const VCSection = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Button
-                onClick={convertVoice}
-                loading={isConverting}
-                disabled={!sourceAudio}
-                className="w-full"
-                size="lg"
-              >
-                {isConverting ? 'Converting Voice...' : 'Convert Voice'}
-              </Button>
+              {isConverting ? (
+                <Button
+                  onClick={cancelConversion}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white border-red-600"
+                  size="lg"
+                >
+                  Cancel Conversion ({(Math.round(progress))}%)
+                </Button>
+              ) : (
+                <Button
+                  onClick={convertVoice}
+                  disabled={!sourceAudio}
+                  className="w-full"
+                  size="lg"
+                >
+                  Convert Voice
+                </Button>
+              )}
             </motion.div>
 
           </CardContent>
@@ -205,7 +273,12 @@ const VCSection = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              <AudioPlayer src={convertedAudio} title="Converted Voice" />
+              <AudioPlayer
+                src={convertedAudio}
+                title="Converted Voice"
+                isGenerating={isConverting}
+                progress={progress}
+              />
             </motion.div>
           </CardContent>
         </Card>

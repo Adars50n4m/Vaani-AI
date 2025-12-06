@@ -163,7 +163,10 @@ class MockChatterboxVC:
         return torch.tensor(audio).unsqueeze(0)
 
 # Set up TTS and VC classes - Use Multilingual TTS for Hindi support
-if MULTILINGUAL_TTS_AVAILABLE:
+# Set up TTS and VC classes - Use Multilingual TTS for Hindi support
+USE_LIGHTWEIGHT_TTS = os.environ.get('USE_LIGHTWEIGHT_TTS', 'false').lower() == 'true'
+
+if MULTILINGUAL_TTS_AVAILABLE and not USE_LIGHTWEIGHT_TTS:
     # Use Multilingual TTS for Hindi and other languages
     ChatterboxTTS = ChatterboxMultilingualTTS
     print("✅ Using ResembleAI Chatterbox Multilingual TTS (supports Hindi & 15+ languages)")
@@ -176,7 +179,11 @@ else:
     ChatterboxTTS = MockMultilingualTTS
     print("⚠️ Using Mock TTS (no real TTS available)")
 
-ChatterboxVC = MockChatterboxVC
+if ORIGINAL_TTS_AVAILABLE:
+    print("✅ Using Original ChatterBox VC")
+else:
+    ChatterboxVC = MockChatterboxVC
+    print("⚠️ Using Mock VC (real VC not available)")
 
 # Initialize Flask with static folder pointing to React build
 app = Flask(__name__, static_folder='../dist', static_url_path='')
@@ -272,7 +279,8 @@ def get_mongo_db():
         mongo_status = {'connected': False, 'error': 'pymongo not installed'}
         return None
     try:
-        mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        import certifi
+        mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000, tlsCAFile=certifi.where())
         # Verify connection
         mongo_client.admin.command('ping')
         mongo_db = mongo_client[MONGO_DB_NAME]
